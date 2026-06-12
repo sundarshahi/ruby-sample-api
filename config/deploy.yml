@@ -19,7 +19,7 @@ env:
     RACK_ENV: production
     PORT: "3000"
     WEB_CONCURRENCY: "2"
-    APP_NAME: ruby-api
+    APP_NAME: ruby-api-server
 
   secret:
     - DATABASE_URL
@@ -28,6 +28,11 @@ env:
 
 ssh:
   user: ubuntu
+  proxy:
+    command: aws ssm start-session \
+      --target %h \
+      --document-name AWS-StartSSHSession \
+      --parameters portNumber=%p
 
 proxy:
   ssl: true

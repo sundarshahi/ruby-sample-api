@@ -142,14 +142,14 @@ resource "aws_security_group" "app" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # SSH — Kamal deploys over SSH; restrict to your IP in prod!
-  ingress {
-    description = "SSH (Kamal deploy)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
-  }
+  # # SSH — Kamal deploys over SSH; restrict to your IP in prod!
+  # ingress {
+  #   description = "SSH (Kamal deploy)"
+  #   from_port   = 22
+  #   to_port     = 22
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.allowed_ssh_cidr]
+  # }
 
   # All outbound (Docker pulls, Let's Encrypt, package updates)
   egress {
@@ -167,7 +167,7 @@ resource "aws_security_group" "app" {
 ###############################################################################
 
 resource "aws_iam_role" "ec2" {
-  name = "${var.project}-ec2-role"
+  name = "${var.project}-deploy-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -261,7 +261,7 @@ resource "aws_instance" "app" {
   USERDATA
   )
 
-  tags = { Name = "${var.project}-server" }
+  tags = { Name = "${var.project}-server", Kamal = true }
 
   lifecycle {
     # Don't recreate if AMI updates — handle AMI updates manually

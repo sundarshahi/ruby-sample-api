@@ -2,91 +2,27 @@ name: Deploy
 
 on:
   push:
-    branches:
-      - main
-
-  workflow_dispatch:
-
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  RUBY_VERSION: "3.4.9"
+    branches: [main]
 
 jobs:
   deploy:
-    name: Kamal Deploy
     runs-on: ubuntu-latest
 
     permissions:
+      id-token: write
       contents: read
-      packages: write
-
-    environment:
-      name: production
-      url: https://${{ vars.DEPLOY_DOMAIN }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          ruby-version: ${{ env.RUBY_VERSION }}
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/ruby-api-deploy-role
+          aws-region: ap-south-1
 
       - name: Install Kamal
         run: gem install kamal --no-document
 
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
-
       - name: Deploy
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
-
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
-          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
-
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-
-          APP_VERSION: ${{ github.sha }}
-
-        run: |
-          kamal deploy
-
-      - name: Smoke Test
-        run: |
-          echo "Waiting for deployment..."
-
-          for i in {1..18}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              "https://${{ vars.DEPLOY_DOMAIN }}/health/ready" || echo "000")
-
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Deployment healthy"
-              exit 0
-            fi
-
-            echo "Waiting... attempt $i"
-            sleep 10
-          done
-
-          echo "❌ Deployment failed health check"
-          exit 1
+        run: kamal deploy
