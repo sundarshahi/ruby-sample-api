@@ -4,25 +4,25 @@
 # Stage 2: runtime       — minimal image, non-root user, no build tools
 # ─────────────────────────────────────────────────────────────────────────────
 
-ARG RUBY_VERSION=3.3.0
+ARG RUBY_VERSION=3.4.9
 
 # ── Stage 1: gems ─────────────────────────────────────────────────────────────
 FROM ruby:${RUBY_VERSION}-slim AS gems
 
 RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends \
-      build-essential \
-      libpq-dev \
-      git \
-    && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends \
+  build-essential \
+  libpq-dev \
+  git \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
 COPY Gemfile Gemfile.lock ./
 
 RUN bundle config set --local deployment true && \
-    bundle config set --local without "development test" && \
-    bundle install --jobs 4 --retry 3
+  bundle config set --local without "development test" && \
+  bundle install --jobs 4 --retry 3
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM ruby:${RUBY_VERSION}-slim AS runtime
@@ -32,16 +32,16 @@ ARG GIT_SHA=unknown
 ARG APP_VERSION=unknown
 
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.revision="${GIT_SHA}" \
-      org.opencontainers.image.version="${APP_VERSION}"
+  org.opencontainers.image.revision="${GIT_SHA}" \
+  org.opencontainers.image.version="${APP_VERSION}"
 
 # Runtime-only system deps
 RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends \
-      libpq5 \
-      curl \
-    && rm -rf /var/lib/apt/lists/* && \
-    useradd -r -u 1000 -m -s /bin/bash appuser
+  apt-get install -y --no-install-recommends \
+  libpq5 \
+  curl \
+  && rm -rf /var/lib/apt/lists/* && \
+  useradd -r -u 1000 -m -s /bin/bash appuser
 
 WORKDIR /app
 
@@ -58,11 +58,11 @@ USER appuser
 
 # Environment defaults (override at runtime)
 ENV RACK_ENV=production \
-    PORT=3000 \
-    WEB_CONCURRENCY=2 \
-    RAILS_MAX_THREADS=5 \
-    BUNDLE_DEPLOYMENT=true \
-    BUNDLE_WITHOUT="development:test"
+  PORT=3000 \
+  WEB_CONCURRENCY=2 \
+  RAILS_MAX_THREADS=5 \
+  BUNDLE_DEPLOYMENT=true \
+  BUNDLE_WITHOUT="development:test"
 
 EXPOSE 3000
 
