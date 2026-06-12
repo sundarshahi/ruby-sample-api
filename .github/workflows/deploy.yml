@@ -23,7 +23,6 @@ jobs:
 
       # Install dependencies (including kamal)
       - name: Install dependencies
-        working-directory: app
         run: bundle install
 
       # AWS OIDC auth
