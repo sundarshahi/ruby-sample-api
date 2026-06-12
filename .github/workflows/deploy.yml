@@ -9,7 +9,7 @@ name: Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch:          # Allow manual deploys from Actions UI
+  workflow_dispatch: # Allow manual deploys from Actions UI
     inputs:
       environment:
         description: Target environment
@@ -20,12 +20,12 @@ on:
 
 concurrency:
   group: deploy-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel an in-progress deploy
+  cancel-in-progress: false # Never cancel an in-progress deploy
 
 env:
-  RUBY_VERSION:    "3.3.0"
-  REGISTRY:        ghcr.io
-  IMAGE_NAME:      ${{ github.repository }}/ruby-api
+  RUBY_VERSION: "3.4.9"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ruby-api
 
 jobs:
   # ── Gate: CI must pass ────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ jobs:
     needs: ci-check
     permissions:
       contents: read
-      packages: write         # Required to push to GHCR
+      packages: write # Required to push to GHCR
 
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
@@ -73,13 +73,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context:    app
-          file:       app/Dockerfile
-          push:       true
-          tags:       ${{ steps.meta.outputs.tags }}
-          labels:     ${{ steps.meta.outputs.labels }}
+          context: app
+          file: app/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
           build-args: |
             GIT_SHA=${{ github.sha }}
             APP_VERSION=${{ github.sha }}
@@ -115,19 +115,19 @@ jobs:
         working-directory: deploy
         env:
           # Registry auth
-          GITHUB_ACTOR:            ${{ github.actor }}
+          GITHUB_ACTOR: ${{ github.actor }}
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY:       ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
           # Target server
-          DEPLOY_HOST:   ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
 
           # App secrets (stored as GitHub Actions secrets)
-          DATABASE_URL:    ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
           ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
-          POSTGRES_USER:   ${{ secrets.POSTGRES_USER }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
           # Image version

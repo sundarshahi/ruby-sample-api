@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RUBY_VERSION: "3.3.0"
+  RUBY_VERSION: "3.4.9"
 
 jobs:
   # ── 1. Lint ──────────────────────────────────────────────────────────────────
@@ -46,9 +46,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER:     postgres
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB:       app_test
+          POSTGRES_DB: app_test
         ports: ["5432:5432"]
         options: >-
           --health-cmd pg_isready
@@ -68,7 +68,7 @@ jobs:
       - name: Run migrations
         working-directory: app
         env:
-          RACK_ENV:     test
+          RACK_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost/app_test
           SKIP_DB_CHECK: "1"
         run: bundle exec rake db:migrate
@@ -76,7 +76,7 @@ jobs:
       - name: Run specs
         working-directory: app
         env:
-          RACK_ENV:     test
+          RACK_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost/app_test
           SKIP_DB_CHECK: "1"
         run: bundle exec rspec spec/ --format progress --format RspecJunitFormatter --out rspec-results.xml
@@ -154,7 +154,7 @@ jobs:
           format: sarif
           output: trivy.sarif
           severity: CRITICAL,HIGH
-          exit-code: "0"   # warn only — flip to "1" to block on CRITICAL
+          exit-code: "0" # warn only — flip to "1" to block on CRITICAL
 
       - name: Upload Trivy SARIF
         uses: github/codeql-action/upload-sarif@v3
