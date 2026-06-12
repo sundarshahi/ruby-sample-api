@@ -9,7 +9,7 @@ gem "kamal"
 gem 'rake'
 gem "sinatra",        "~> 4.0"
 gem "sinatra-contrib", "~> 4.0"  # namespace, json helpers
-gem "puma",           "~> 6.4"   # Production app server
+gem "puma",           "~> 7.2"   # Production app server
 
 # Database
 gem "sequel",         "~> 5.82"  # Lightweight ORM
