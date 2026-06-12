@@ -5,7 +5,6 @@ app/.env
 app/log/*.log
 app/tmp/
 app/coverage/
-app/*.lock
 
 # Terraform
 infra/terraform/.terraform/
