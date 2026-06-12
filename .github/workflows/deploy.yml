@@ -11,19 +11,34 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      packages: write
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.9"
+          bundler-cache: false
+
+      # ✅ Install Kamal in user space
+      - name: Install Kamal
+        run: |
+          gem install kamal --no-document --user-install
+          echo "$HOME/.local/share/gem/ruby/*/bin" >> $GITHUB_PATH
+
+      # OR (more stable PATH alternative)
+      - name: Add Ruby gem bin to PATH
+        run: |
+          echo "PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
+
+      # AWS OIDC auth
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/deploy
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/deploy
           aws-region: ap-south-1
 
-      - name: Install Kamal
-        run: gem install kamal --no-document
-
+      # Deploy
       - name: Deploy
         run: kamal deploy
