@@ -5,6 +5,7 @@ source "https://rubygems.org"
 ruby "3.4.9"
 
 # Web framework — minimal, no Rails overhead
+gem "kamal"
 gem 'rake'
 gem "sinatra",        "~> 4.0"
 gem "sinatra-contrib", "~> 4.0"  # namespace, json helpers
