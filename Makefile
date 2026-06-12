@@ -61,10 +61,10 @@ infra-init: ## Terraform init
 	cd infra/terraform && terraform init
 
 infra-plan: ## Terraform plan
-	cd infra/terraform && terraform plan -var="ssh_public_key=$$(cat ~/.ssh/id_rsa.pub)"
+	cd infra/terraform && terraform plan -var="ssh_public_key=$$(cat ~/.ssh/id_ed25519.pub)"
 
 infra-apply: ## Terraform apply — creates EC2
-	cd infra/terraform && terraform apply -var="ssh_public_key=$$(cat ~/.ssh/id_rsa.pub)"
+	cd infra/terraform && terraform apply -var="ssh_public_key=$$(cat ~/.ssh/id_ed25519.pub)"
 
 infra-output: ## Show Terraform outputs
 	cd infra/terraform && terraform output
