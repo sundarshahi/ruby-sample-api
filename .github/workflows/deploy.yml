@@ -35,5 +35,5 @@ jobs:
 
       # Deploy
       - name: Deploy
-        working-directory: app
-        run: bundle exec kamal deploy
+        run: bundle exec kamal deploy -c ../deploy/config/deploy.yml
+        working-directory: repo/app
