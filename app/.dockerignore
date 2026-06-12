@@ -1,0 +1,9 @@
+.git
+.github
+.env*
+spec/
+log/
+tmp/
+*.md
+.rubocop.yml
+Makefile

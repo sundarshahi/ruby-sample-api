@@ -1,0 +1,50 @@
+# frozen_string_literal: true
+
+require "dotenv/load" rescue nil
+require "sequel"
+require_relative "config/database"
+
+namespace :db do
+  MIGRATIONS_PATH = File.join(__dir__, "db/migrate")
+
+  desc "Run pending migrations"
+  task :migrate do
+
+    Sequel.extension :migration
+    Sequel::Migrator.run(DB, MIGRATIONS_PATH)
+    puts "✅ Migrations complete (version: #{DB[:schema_info].first&.dig(:version)})"
+  end
+
+  desc "Roll back last migration"
+  task :rollback do
+    current = DB[:schema_info].first&.dig(:version) || 0
+    Sequel::Migrator.run(DB, MIGRATIONS_PATH, target: current - 1)
+    puts "✅ Rolled back to version #{current - 1}"
+  end
+
+  desc "Drop and recreate database (dev/test only)"
+  task :reset do
+    raise "Refusing to reset in production!" if ENV["RACK_ENV"] == "production"
+    Sequel::Migrator.run(DB, MIGRATIONS_PATH, target: 0)
+    Sequel::Migrator.run(DB, MIGRATIONS_PATH)
+    puts "✅ Database reset"
+  end
+
+  desc "Show current schema version"
+  task :version do
+    v = DB[:schema_info].first&.dig(:version) || 0
+    puts "Current schema version: #{v}"
+  end
+end
+
+namespace :spec do
+  desc "Run all specs"
+  task :all do
+    exec "bundle exec rspec spec/ --format documentation"
+  end
+end
+
+desc "Start dev server"
+task :server do
+  exec "bundle exec puma -C config/puma.rb"
+end
