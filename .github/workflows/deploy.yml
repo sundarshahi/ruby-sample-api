@@ -116,7 +116,7 @@ jobs:
         env:
           # Registry auth
           GITHUB_ACTOR: ${{ github.actor }}
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
           # Target server
