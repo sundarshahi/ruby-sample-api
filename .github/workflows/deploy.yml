@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false # Never cancel an in-progress deploy
 
 env:
-  RUBY_VERSION: "3.4.9"
+  RUBY_VERSION: "3.3.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/ruby-api
 
@@ -73,8 +73,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: app
+          file: app/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -116,7 +116,7 @@ jobs:
         env:
           # Registry auth
           GITHUB_ACTOR: ${{ github.actor }}
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
           # Target server
