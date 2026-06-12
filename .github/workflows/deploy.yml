@@ -54,6 +54,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -75,17 +76,18 @@ jobs:
         run: |
           echo "Waiting for deployment..."
 
-          for i in {1..12}; do
+          for i in {1..18}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              "https://${{ vars.DEPLOY_DOMAIN }}/health/ready")
+              "https://${{ vars.DEPLOY_DOMAIN }}/health/ready" || echo "000")
 
             if [ "$STATUS" = "200" ]; then
               echo "✅ Deployment healthy"
               exit 0
             fi
 
+            echo "Waiting... attempt $i"
             sleep 10
           done
 
-          echo "❌ Health check failed"
+          echo "❌ Deployment failed health check"
           exit 1

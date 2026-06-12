@@ -65,8 +65,13 @@ accessories:
 builder:
   arch: amd64
 
+  dockerfile: app/Dockerfile
+
+  context: app
+
   args:
     APP_VERSION: <%= ENV.fetch("APP_VERSION", "unknown") %>
+    GIT_SHA: <%= ENV.fetch("APP_VERSION", "unknown") %>
 
   cache:
     type: gha
