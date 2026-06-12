@@ -35,4 +35,5 @@ jobs:
 
       # Deploy
       - name: Deploy
+        working-directory: app
         run: bundle exec kamal deploy
