@@ -54,7 +54,7 @@ proxy:
   host: <%= ENV.fetch("DEPLOY_DOMAIN", "localhost") %>
   app_port: 3000
   healthcheck:
-    path:     /health/ready
+    path: /health/ready
     interval: 10
     timeout:  5
 
@@ -86,12 +86,12 @@ builder:
   cache:
     type: gha                                 # GitHub Actions cache for layers
 
-# ── Healthcheck ───────────────────────────────────────────────────────────────
-healthcheck:
-  path:     /health/ready
-  port:     3000
-  max_attempts: 10
-  interval:  5
+# # ── Healthcheck ───────────────────────────────────────────────────────────────
+# healthcheck:
+#   path:     /health/ready
+#   port:     3000
+#   max_attempts: 10
+#   interval:  5
 
 # ── Rolling deploy ────────────────────────────────────────────────────────────
 # Kamal boots the new container, waits for health check to pass,

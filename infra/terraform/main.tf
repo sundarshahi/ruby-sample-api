@@ -40,17 +40,17 @@ provider "aws" {
 # VARIABLES
 ###############################################################################
 
-variable "aws_region"       { default = "us-east-1" }
-variable "project"          { default = "ruby-api" }
-variable "environment"      { default = "production" }
-variable "instance_type"    { default = "t3.micro" }    # ~$8.5/mo — upgrade to t3.small if needed
-variable "ssh_public_key"   { description = "EC2 SSH public key content" }
+variable "aws_region" { default = "us-east-1" }
+variable "project" { default = "ruby-api" }
+variable "environment" { default = "production" }
+variable "instance_type" { default = "t3.micro" } # ~$8.5/mo — upgrade to t3.small if needed
+variable "ssh_public_key" { description = "EC2 SSH public key content" }
 variable "allowed_ssh_cidr" {
   description = "CIDRs allowed SSH access (restrict to your IP!)"
-  default     = "0.0.0.0/0"      # Change to YOUR_IP/32 in production
+  default     = "0.0.0.0/0" # Change to YOUR_IP/32 in production
 }
-variable "ebs_volume_size"  { default = 20 }            # GB — holds OS + Docker + PG data
-variable "ami_id"           { default = "" }            # leave blank for latest Ubuntu 22.04
+variable "ebs_volume_size" { default = 20 } # GB — holds OS + Docker + PG data
+variable "ami_id" { default = "" }          # leave blank for latest Ubuntu 22.04
 
 ###############################################################################
 # DATA
@@ -60,7 +60,7 @@ data "aws_availability_zones" "available" { state = "available" }
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"]  # Canonical
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
@@ -82,7 +82,7 @@ locals {
 ###############################################################################
 
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/24"   # /24 is plenty for a single-server setup
+  cidr_block           = "10.0.0.0/24" # /24 is plenty for a single-server setup
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags                 = { Name = "${var.project}-vpc" }
@@ -97,7 +97,7 @@ resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = local.az
-  map_public_ip_on_launch = false  # We use Elastic IP instead
+  map_public_ip_on_launch = false # We use Elastic IP instead
   tags                    = { Name = "${var.project}-subnet" }
 }
 
@@ -121,7 +121,7 @@ resource "aws_route_table_association" "main" {
 
 resource "aws_security_group" "app" {
   name        = "${var.project}-sg"
-  description = "Ruby API server — HTTP/HTTPS/SSH only"
+  description = "Ruby API server -HTTP/HTTPS/SSH only"
   vpc_id      = aws_vpc.main.id
 
   # HTTP — Traefik will redirect to HTTPS
@@ -274,9 +274,9 @@ resource "aws_instance" "app" {
 ###############################################################################
 
 resource "aws_eip" "app" {
-  instance = aws_instance.app.id
-  domain   = "vpc"
-  tags     = { Name = "${var.project}-eip" }
+  instance   = aws_instance.app.id
+  domain     = "vpc"
+  tags       = { Name = "${var.project}-eip" }
   depends_on = [aws_internet_gateway.main]
 }
 
