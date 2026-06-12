@@ -21,11 +21,9 @@ jobs:
           ruby-version: "3.4.9"
           bundler-cache: true
 
-      - name: Configure Bundler
-        run: bundle config set frozen false
       # Install dependencies (including kamal)
       - name: Install dependencies
-        run: bundle install
+        run: bundle install --no-frozen
 
       # AWS OIDC auth
       - name: Configure AWS credentials (OIDC)
