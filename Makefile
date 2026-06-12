@@ -68,3 +68,6 @@ infra-apply: ## Terraform apply — creates EC2
 
 infra-output: ## Show Terraform outputs
 	cd infra/terraform && terraform output
+
+infra-destroy: ## Terraform init
+	cd infra/terraform && terraform destroy

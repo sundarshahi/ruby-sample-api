@@ -1,99 +1,74 @@
-# deploy/deploy.yml — Kamal 2 deployment configuration
-#
-# Kamal handles:
-#   • Docker build & push to registry
-#   • SSH deploy to EC2
-#   • Zero-downtime rolling restarts via Traefik proxy
-#   • Health-checked boot (won't cut over until /health returns 200)
-#   • Secrets injection from environment / 1Password / vault
-# ─────────────────────────────────────────────────────────────────────────────
-
 service: ruby-api
 
-# Docker image — pushed to GitHub Container Registry (free, no extra infra)
 image: ghcr.io/<%= ENV.fetch("GITHUB_REPOSITORY") %>/ruby-api
 
-# ── Servers ──────────────────────────────────────────────────────────────────
 servers:
   web:
     hosts:
-      - <%= ENV.fetch("DEPLOY_HOST") %>          # EC2 public IP / Elastic IP
-    labels:
-      traefik.http.routers.ruby-api.rule: "Host(`<%= ENV.fetch('DEPLOY_DOMAIN', 'localhost') %>`)"
-      traefik.http.routers.ruby-api.tls: "true"
-      traefik.http.routers.ruby-api.tls.certresolver: "letsencrypt"
-      traefik.http.routers.ruby-api.entrypoints: "websecure"
-      traefik.http.middlewares.https-redirect.redirectscheme.scheme: "https"
+      - <%= ENV.fetch("DEPLOY_HOST") %>
 
-# ── Registry ──────────────────────────────────────────────────────────────────
 registry:
-  server:   ghcr.io
+  server: ghcr.io
   username: <%= ENV.fetch("GITHUB_ACTOR") %>
-  password:
-    - KAMAL_REGISTRY_PASSWORD       # Set to GITHUB_TOKEN in secrets
 
-# ── Environment variables injected into the container ─────────────────────────
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
 env:
   clear:
-    RACK_ENV:         production
-    PORT:             "3000"
-    WEB_CONCURRENCY:  "2"
-    APP_NAME:         ruby-api
+    RACK_ENV: production
+    PORT: "3000"
+    WEB_CONCURRENCY: "2"
+    APP_NAME: ruby-api
+
   secret:
-    - DATABASE_URL                  # postgres://user:pass@host/db
-    - SECRET_KEY_BASE               # Random 64-char hex string
-    - ALLOWED_ORIGINS               # Comma-separated allowed CORS origins
+    - DATABASE_URL
+    - SECRET_KEY_BASE
+    - ALLOWED_ORIGINS
 
-# ── SSH ───────────────────────────────────────────────────────────────────────
 ssh:
-  user: ubuntu                      # Amazon Linux 2023 default user
+  user: ubuntu
 
-# ── Traefik (reverse proxy + automatic TLS) ───────────────────────────────────
 proxy:
   ssl: true
-  host: <%= ENV.fetch("DEPLOY_DOMAIN", "localhost") %>
+  host: <%= ENV.fetch("DEPLOY_DOMAIN") %>
+
   app_port: 3000
+
   healthcheck:
     path: /health/ready
     interval: 10
-    timeout:  5
+    timeout: 5
 
-# ── Accessories — PostgreSQL sidecar on same EC2 ──────────────────────────────
-# For truly minimal infra: DB runs in a Docker container on the same EC2.
-# Upgrade path: replace with RDS by just changing DATABASE_URL secret.
 accessories:
   db:
-    image:   postgres:16-alpine
-    host:    <%= ENV.fetch("DEPLOY_HOST") %>
-    port:    "127.0.0.1:5432:5432"           # Bind to loopback only — not public
+    image: postgres:16-alpine
+
+    host: <%= ENV.fetch("DEPLOY_HOST") %>
+
+    port: "127.0.0.1:5432:5432"
+
     env:
       clear:
-        POSTGRES_DB:       ruby_api_production
+        POSTGRES_DB: ruby_api_production
+
       secret:
         - POSTGRES_USER
         - POSTGRES_PASSWORD
+
     files:
       - config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
     directories:
-      - data:/var/lib/postgresql/data        # Persisted on EC2 EBS volume
+      - data:/var/lib/postgresql/data
 
-# ── Build settings ────────────────────────────────────────────────────────────
 builder:
-  arch: amd64                                 # t3/t4g — match your EC2 arch
+  arch: amd64
+
   args:
-    BUILD_DATE:   <%= Time.now.utc.to_s %>
-    APP_VERSION:  <%= ENV.fetch("APP_VERSION", "unknown") %>
+    APP_VERSION: <%= ENV.fetch("APP_VERSION", "unknown") %>
+
   cache:
-    type: gha                                 # GitHub Actions cache for layers
+    type: gha
 
-# # ── Healthcheck ───────────────────────────────────────────────────────────────
-# healthcheck:
-#   path:     /health/ready
-#   port:     3000
-#   max_attempts: 10
-#   interval:  5
-
-# ── Rolling deploy ────────────────────────────────────────────────────────────
-# Kamal boots the new container, waits for health check to pass,
-# then switches Traefik to the new container — zero downtime.
 asset_path: /app/public
