@@ -81,7 +81,7 @@ accessories:
 builder:
   arch: amd64                                 # t3/t4g — match your EC2 arch
   args:
-    BUILD_DATE:   <%= Time.now.utc.iso8601 %>
+    BUILD_DATE:   <%= Time.now.utc.to_s %>
     APP_VERSION:  <%= ENV.fetch("APP_VERSION", "unknown") %>
   cache:
     type: gha                                 # GitHub Actions cache for layers
